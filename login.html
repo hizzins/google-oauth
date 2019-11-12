@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>구글 로그인 테스트</title>
+</head>
+<body>
+<span id="name"></span>
+<input id="loginBtn" type="button" value="Login" style="width: 100px; height: 30px; text-align: center"/>
+<script>
+  var loginBtn = document.querySelector('#loginBtn');
+  loginBtn.addEventListener('click', function(e) {
+    if (e.target.value === 'Login') {
+      gauth.signIn({prompt: 'select_account'}).then(function() {
+        checkLoginStatus();
+      })
+    } else {
+      gauth.signOut().then(function() {
+        console.log('gauth.signOut()');
+        checkLoginStatus();
+      })
+    }
+  });
+  function checkLoginStatus() {
+    var nameTxt = document.querySelector('#name');
+    if (gauth.isSignedIn.get()) {
+      console.log('logined', gauth.currentUser.get());
+      loginBtn.value = 'Logout';
+      var googleUser = gauth.currentUser.get();
+      var profile = googleUser.getBasicProfile();
+      var name = profile.getName();
+      var email = profile.getEmail();
+      var token = googleUser.getAuthResponse();
+      console.log('profile', name, email, token);
+      document.querySelector('#name').innerHTML = name + '님 로그인되었습니다.';
+    } else {
+      console.log('logouted');
+      loginBtn.value = 'Login';
+      document.querySelector('#name').innerHTML = '';
+    }
+  }
+
+  function init() {
+    console.log('init');
+    gapi.load('auth2', function() {
+      console.log('auth2');
+      window.gauth = gapi.auth2.init({
+        client_id:'client_id'
+      });
+      gauth.then(function() {
+        console.log('google auth success');
+        checkLoginStatus();
+      }, function() {
+        console.log('google auth fail');
+      });
+    });
+  }
+
+</script>
+<script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
+</body>
+</html>
